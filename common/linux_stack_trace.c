@@ -76,11 +76,24 @@ void signal_stack_trace_print(int signum, siginfo_t *info, void *ptr)
 	pCurrent += sprintf(pCurrent, "\tinfo.si_code  = %d (%s)\n", \
 			info->si_code, si_codes[info->si_code]);
 	pCurrent += sprintf(pCurrent, "\tinfo.si_addr  = %p\n", info->si_addr);
-	for(i = 0; i < NGREG; i++)
-	{
-		pCurrent += sprintf(pCurrent, "\treg[%02d] = 0x"REGFORMAT"\n",
-			i, ucontext->uc_mcontext.gregs[i]);
-	}
+	//for(i = 0; i < NGREG; i++)
+	//{
+	//	pCurrent += sprintf(pCurrent, "\treg[%02d] = 0x"REGFORMAT"\n",
+	//		i, ucontext->uc_mcontext.gregs[i]);
+	//}
+    i = 0;
+    if (i < NGREG)
+      pCurrent += sprintf(pCurrent, "\treg[%02d] = 0x"REGFORMAT"\n", i,
+                          ucontext->uc_mcontext.arm_r0);
+    if (++i < NGREG)
+      pCurrent += sprintf(pCurrent, "\treg[%02d] = 0x"REGFORMAT"\n", i,
+                          ucontext->uc_mcontext.arm_r1);
+    if (++i < NGREG)
+      pCurrent += sprintf(pCurrent, "\treg[%02d] = 0x"REGFORMAT"\n", i,
+                          ucontext->uc_mcontext.arm_r2);
+    if (++i < NGREG)
+      pCurrent += sprintf(pCurrent, "\treg[%02d] = 0x"REGFORMAT"\n", i,
+                          ucontext->uc_mcontext.arm_r3);
 
 #ifndef SIGSEGV_NOSTACK
 #if defined(SIGSEGV_STACK_IA64) || defined(SIGSEGV_STACK_X86)
@@ -146,8 +159,9 @@ void signal_stack_trace_print(int signum, siginfo_t *info, void *ptr)
 	}
 #else
 	pCurrent += sprintf(pCurrent, "\tStack trace (non-dedicated):\n");
-	sz = backtrace(bt, 20);
-	strings = backtrace_symbols(bt, sz);
+    void *bt[10000];
+	int sz = backtrace(bt, 20);
+	char **strings = backtrace_symbols(bt, sz);
 	for(i = 0; i < sz; ++i)
 	{
 		pCurrent += sprintf(pCurrent, "\t\t%s\n", strings[i]);
